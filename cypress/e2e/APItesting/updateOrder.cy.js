@@ -3,28 +3,28 @@ describe('PATCH update an order with authentification', () => {
     let authToken = null
     let orderId = null
 
-    before('Authentificate with data valid clientName and clientEmail', function(){
+    before('Authentificate with data valid clientName and clientEmail', () => {
         cy
             .request({
                 method: "POST",
-                url: "https://simple-books-api.glitch.me/api-clients/",
-                headers: {'Content-Type': 'application/json'},
+                url: "/api-clients",
+                headers: { 'Content-Type': 'application/json' },
                 body: {
                     clientName: "CYtest",
-                    clientEmail: Math.random().toString(5).substring(2)+"@gmail.com"
+                    clientEmail: Math.random().toString(5).substring(2) + "@gmail.com"
                 }
             }).then((response) => {
-                authToken=response.body.accessToken
+                authToken = response.body.accessToken
             })
     })
-    beforeEach('Check if user can submit an order with authentification', function(){
+    beforeEach('Check if user can submit an order with authentification', () => {
         cy
             .request({
                 method: 'POST',
-                url: 'https://simple-books-api.glitch.me/orders',
+                url: '/orders',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer '+authToken
+                    'Authorization': 'Bearer ' + authToken
                 },
                 body: {
                     bookId: 1,
@@ -36,68 +36,68 @@ describe('PATCH update an order with authentification', () => {
                 expect(response.body.created).to.eql(true)
             })
     })
-    afterEach('Delete an order',() => {
+    afterEach('Delete an order', () => {
         cy
             .request({
-                method:'DELETE',
-                url: 'https://simple-books-api.glitch.me/orders/'+orderId,
-                failOnStatusCode: false,
+                method: 'DELETE',
+                url: '/orders/' + orderId,
                 headers: {
-                    'Authorization': 'Bearer '+authToken
+                    'Authorization': 'Bearer ' + authToken
                 }
-            }).then((response)=> {
+            }).then((response) => {
                 expect(response.status).to.eql(204)
             })
     });
-    
-    it('Check if user can update an order using valid ID', function(){
+
+    it('Check if user can update an order using valid ID', () => {
         cy
             .request({
                 method: 'PATCH',
-                url: 'https://simple-books-api.glitch.me/orders/' + orderId,
-                headers: { 
-                    'Content-Type':'application/json',
-                    'Authorization': 'Bearer '+authToken
+                url: '/orders/' + orderId,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + authToken
                 },
                 body: {
-                    "customerName": "{{$randomFullName}}" 
+                    "customerName": "{{$randomFullName}}"
                 }
             }).then((response) => {
                 expect(response.status).to.eql(204);
             })
     })
-    it('Check if user can update an order using invalid ID', function(){
+    it('Check if user can update an order using invalid ID', () => {
         cy
             .request({
                 method: 'PATCH',
-                url: 'https://simple-books-api.glitch.me/orders' + '1',
+                url: '/orders' + '1',
                 failOnStatusCode: false,
-                headers: { 
-                    'Content-Type':'application/json',
-                    'Authorization': 'Bearer '+authToken
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + authToken
                 },
                 body: {
-                    "customerName": "{{$randomFullName}}" 
+                    "customerName": "{{$randomFullName}}"
                 }
             }).then((response) => {
                 expect(response.status).to.eql(404);
             })
     })
-    it('Check if user can update an order without authentification', function(){
+    it('Check if user can update an order without authentification', () => {
         cy
             .request({
                 method: 'PATCH',
-                url: 'https://simple-books-api.glitch.me/orders/' + orderId,
+                url: '/orders/' + orderId,
                 failOnStatusCode: false,
-                headers: { 
-                    'Content-Type':'application/json',
+                headers: {
+                    'Content-Type': 'application/json',
                 },
                 body: {
-                    "customerName": "{{$randomFullName}}" 
+                    "customerName": "{{$randomFullName}}"
                 }
             }).then((response) => {
                 expect(response.status).to.eql(401);
+                expect(response.body.error).to.eql("Missing Authorization header.");
             })
     })
-    
+
 })
